@@ -106,6 +106,7 @@ body {
 
 .btn {
     font-size: 24px;
+    font-weight: 700;
     color: #333;
     width: 65px;
     height: 65px;
@@ -115,11 +116,34 @@ body {
     transition: 0.3s ease;
 }
 
+.clear-btn {
+    width: 100px;
+}
+
 .btn:hover {
     background-color: #777;
 }
 
-.clear-btn {
-    width: 100px;
+.clear-btn:hover {
+    color: orange;
+    border: 3px solid orange;
 }
+
+.btn-number:hover {
+    color: yellowgreen;
+    border: 3px solid yellowgreen;
+}
+
+.btn-operation:hover,
+.btn-dot:hover {
+    color: dodgerblue;
+    border: 3px solid dodgerblue;
+}
+
+.btn-equal:hover {
+    color: tomato;
+    border: 3px solid tomato;
+}
+
+
 
