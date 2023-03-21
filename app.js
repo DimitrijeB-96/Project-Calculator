@@ -1,130 +1,163 @@
-//display values and clear them
-const displayValue = document.querySelector('.display-on-screen');
-const displayResult = document.querySelector('.display-result');
-const btnClear = document.querySelector('.clear-btn'); //to implement removing one each 'char' one by another by clicking it
-const btnDelete = document.querySelector('.delete-btn');
+let previousValue = '';
+let currentValue = '';
+let operator = '';
 
-//different way to store variable ?
-function StoreValues(firstNumber, operator, secondNumber) {
-    this.firstNumber = firstNumber;
-    this.operate = operator;
-    this.secondNumber = secondNumber;
-}
+window.addEventListener('keydown', handleKeyPress);
+
+const displayPrevious = document.querySelector('.display-previous');
+const displayCurrent = document.querySelector('.display-current');
+
+const clearBtn = document.querySelector('.clear-btn');
+clearBtn.addEventListener('click', clearScreen);
+
+const numberBtn = document.querySelectorAll('.btn-number');
+const operatorBtn = document.querySelectorAll('.btn-operation');
 
 const equalBtn = document.querySelector('.btn-equal');
+const dotBtn = document.querySelector('.btn-dot');
 
-const addBtn = document.querySelector('.btn-add');
-const subtractBtn = document.querySelector('.btn-subtract'); 
-const multiplyBtn = document.querySelector('.btn-multiply'); 
-const divisionBtn = document.querySelector('.btn-division'); 
-
-//operations
-const operators = document.querySelectorAll('.btn-operation');
-operators.forEach(op => op.addEventListener('click', () => {
-    if (op === multiplyBtn) {
-        displayValue.textContent += ' * ';
-        console.log('multiplying...');
-    
-    } else if (op === divisionBtn) {
-        displayValue.textContent += ' / ';
-        console.log('dividing...');
-    
-    } else if (op === addBtn) {
-        displayValue.textContent += ' + ';
-        console.log('adding...');
-    
-    } else if (op === subtractBtn) {
-        displayValue.textContent += ' - ';
-        console.log('subtracting...');
-    
-    }
+numberBtn.forEach(number => number.addEventListener('click', (e) => {
+    handleNumber(e.target.textContent);
 }));
 
-//select all buttons and dot 
-const numberBtns = document.querySelectorAll('.btn-number');
-const btnDot = document.querySelector('.btn-dot'); // not done implementing this one
-
-//event that get value from each number button clicked
-numberBtns.forEach(btn => btn.addEventListener('click', () => {
-    displayValue.textContent += btn.textContent;
+operatorBtn.forEach(op => op.addEventListener('click', (e) => {
+    handleOperator(e.target.textContent);
 }));
 
-//event that display 'dot' and if textContent string is empty it display '0.'
-btnDot.addEventListener('click', () => {
-    if(displayValue.textContent == '') {
-        displayValue.textContent += '0.';
-    }
-
-    if(!displayValue.textContent.includes('.')) {
-        displayValue.textContent += '.';
-    }     
-});
-
-//event that delete everything from "screen"
-btnDelete.addEventListener('click', () => {
-    displayValue.textContent = '';
-    displayResult.textContent = '';
-});
-
-//event that display result
 equalBtn.addEventListener('click', () => {
-    let printResult;
-    let firstNumber;
-    let operator;
-    let secondNumber;
-    let splitValue;
-    
-    if (displayValue.textContent.includes(' ')) {
-        displayValue.textContent.split(' ');
+    if(previousValue != '' && currentValue != '') {
+        operate();
     }
-    displayResult.textContent = printResult;
 });
 
-function operate(operator, firstNumber, secondNumber) {
-    if (operator == '*') {
-        multiply(firstNumber, secondNumber);
-    } else if (operator == '/') {
-        devision(firstNumber, secondNumber);
-    } else if (operator == '+') {
-        add(firstNumber, secondNumber);
-    } else if (operator == '-') {
-        subtract(firstNumber, secondNumber);
+dotBtn.addEventListener('click', getDecimal);
+
+function handleNumber(num) {
+    if (previousValue !== '' && currentValue !== '' && operator === '') {
+        previousValue = '';
+        displayCurrent.textContent = currentValue;
+    }
+
+    if (currentValue.length <= 9) {
+        currentValue += num;
+        displayCurrent.textContent = currentValue;
     }
 }
 
-function multiply(expression) {
-    let x = expression.firstNumber;
-    let y = expression.secondNumber;
-    let result = parseFloat(x) * parseFloat(y);
-    return result;
+function handleOperator(op) {
+    if (previousValue === '') {
+        previousValue = currentValue;
+        checkOperator(op);
+    } else if (currentValue === '') {
+        checkOperator(op);
+    } else {
+        operate();
+        operator = op;
+        displayCurrent.textContent = '';
+        displayPrevious.textContent = `${previousValue} ${operator}`;
+    }
 }
 
-function devision(expression) {
-    let x = expression.firstNumber;
-    let y = expression.secondNumber;
-    let result = parseFloat(x) / parseFloat(y);
-    return result.toFixed(3);
+function checkOperator(value) {
+    operator = value;
+    displayPrevious.textContent = ` ${previousValue} ${operator}`;
+    displayCurrent.textContent = '';
+    currentValue = '';
 }
 
-function add(expression) {
-    let x = expression.firstNumber;
-    let y = expression.secondNumber;
-    let result = parseFloat(x) + parseFloat(y);
-    return result;
+function operate() {
+    previousValue = Number(previousValue);
+    currentValue = Number(currentValue);
+
+    if (operator === '+') {
+        previousValue += currentValue;
+    } else if (operator === '-') {
+        previousValue -= currentValue;
+    } else if (operator === '*') {
+        previousValue *= currentValue;
+    } else if (operator === '/') {
+        if (currentValue <= 0) {
+            previousValue = "Error!";
+            displayResult();
+            operator = '';
+            return;
+        }
+        previousValue /= currentValue;
+    }
+    previousValue = roundNumber(previousValue);
+    previousValue = previousValue.toString();
+    displayResult();
 }
 
-function subtract(expression) {
-    let x = expression.firstNumber;
-    let y = expression.secondNumber;
-    let result = parseFloat(x) - parseFloat(y);
-    return result;
+function roundNumber(value) {
+    return Math.round(value * 1000000) / 1000000;
 }
 
-// if (displayValue.textContent.includes(' ')) {
-//     splitValue = displayValue.textContent.split(' * ');
-//     firstNumber = splitValue[0];
-//     secondNumber = splitValue[1];
-//     operator = '*';
-//     let storeMultiplication = new StoreValues(firstNumber, operator, secondNumber);
-//     printResult = multiply(storeMultiplication);
-// }
+function displayResult() {
+    if (previousValue.length <= 9) {
+        displayCurrent.textContent = previousValue;
+    } else {
+        displayCurrent.textContent = previousValue.slice(0, 9);
+    }
+
+    displayPrevious.textContent = '';
+    operator = '';
+    currentValue = '';
+}
+
+function getDecimal() {
+    if(currentValue === '') {
+        currentValue = '0.';
+        displayCurrent.textContent += '0.';
+    }
+
+    if(!currentValue.includes('.')) {
+        currentValue += '.';
+        displayCurrent.textContent += '.';
+    }
+}
+
+function clearScreen() {
+    previousValue = '';
+    currentValue = '';
+    operator = '';
+    displayCurrent.textContent = '';
+    displayPrevious.textContent = '';
+}
+
+function handleKeyPress(e) {
+    e.preventDefault();
+    if (e.key >= 0 && e.key <= 9) {
+        handleNumber(e.key);
+    }
+
+    if (e.key === 'Enter' || (e.key === '=' && currentValue != '' && previousValue != '')) {
+        operate();
+    }
+
+    if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/') {
+        handleOperator(e.key);
+    }
+
+    if (e.key === '.') {
+        getDecimal();
+    }
+
+    if (e.key === 'Backspace') {
+        handleBackspace();
+    }
+}
+
+function handleBackspace() {
+    if (currentValue !== '') {
+        currentValue = currentValue.slice(0, -1);
+        displayCurrent.textContent = currentValue;
+        if (currentValue === '') {
+            displayCurrent.textContent = '';
+        }
+    }
+    if (currentValue === '' && previousValue !== '' && operator === '') {
+        previousValue = previousValue.slice(0, -1);
+        displayCurrent.textContent = previousValue;
+    }
+}
